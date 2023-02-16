@@ -81,8 +81,6 @@ export function WalletConnectClientContextProvider({children}: {
 			}
 			console.log("connect, pairing topic is:", pairing?.topic);
 			try {
-				const chain = ["chia:mainnet"]
-
 				const requiredNamespaces = {
 					'chia': {
 						methods: Object.values(CHIA_METHODS),

@@ -169,9 +169,11 @@ export function WalletConnectRpcContextProvider({children}: {
 
 	const walletconnectRpc = {
 
-		// Params:
-		// 	fingerprint
+		/**
+		 * @param fingerprint
+		 */
 		logIn: _createWalletConnectRpcRequestHandler(
+			
 			async (
 				params: WalletConnectParams
 			): Promise<IFormattedRpcResponse> => {
@@ -192,9 +194,10 @@ export function WalletConnectRpcContextProvider({children}: {
 				};
 			}
 		),
-
-		// Params:
-		// 	None
+		
+		/**
+		 * @param fingerprint
+		 */
 		getWallets: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -217,8 +220,9 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	transactionId
+		/**
+		 * @param fingerprint
+		 */
 		getTransaction: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -241,8 +245,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	walletId: optional
+		/**
+		 * @param fingerprint
+		 * @param walletId: optional
+		 */
 		getWalletBalance: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -265,8 +271,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	walletId: optional
+		/**
+		 * @param fingerprint
+		 * @param walletId: optional
+		 */
 		getCurrentAddress: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -289,12 +297,14 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	amount
-		// 	fee
-		// 	address
-		// 	walletId
-		// 	waitForConfirmation: optional
+		/**
+		 * @param fingerprint
+		 * @param amount
+		 * @param fee
+		 * @param address
+		 * @param walletId
+		 * @param waitForConfirmation: optional
+		 */
 		sendTransaction: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -317,9 +327,11 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	id
-		// 	message
+		/**
+		 * @param fingerprint
+		 * @param id
+		 * @param message
+		 */
 		signMessageById: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -342,9 +354,11 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	address
-		// 	amount
+		/**
+		 * @param fingerprint
+		 * @param address
+		 * @param amount
+		 */
 		signMessageByAddress: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -367,9 +381,11 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	walletId: optional
-		// 	newAddress: optional
+		/**
+		 * @param fingerprint
+		 * @param walletId: optional
+		 * @param newAddress: optional
+		 */
 		getNextAddress: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -392,8 +408,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	None
+		/**
+		 * @param fingerprint
+		 * @param None
+		 */
 		getSyncStatus: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -416,13 +434,15 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	start: optional
-		// 	end: optional
-		// 	sortKey: optional
-		// 	reverse: optional
-		// 	includeMyOffers: optional
-		// 	includeTakenOffers: optional
+		/**
+		 * @param fingerprint
+		 * @param start: optional
+		 * @param end: optional
+		 * @param sortKey: optional
+		 * @param reverse: optional
+		 * @param includeMyOffers: optional
+		 * @param includeTakenOffers: optional
+		 */
 		getAllOffers: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -445,8 +465,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	None
+		/**
+		 * @param fingerprint
+		 * @param None
+		 */
 		getOffersCount: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -469,11 +491,13 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	walletIdsAndAmounts
-		// 	driverDict
-		// 	validateOnly: optional
-		// 	disableJSONFormatting: optional
+		/**
+		 * @param fingerprint
+		 * @param walletIdsAndAmounts
+		 * @param driverDict
+		 * @param validateOnly: optional
+		 * @param disableJSONFormatting: optional
+		 */
 		createOfferForIds: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -496,10 +520,12 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	tradeId
-		// 	secure
-		// 	fee
+		/**
+		 * @param fingerprint
+		 * @param tradeId
+		 * @param secure
+		 * @param fee
+		 */
 		cancelOffer: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -522,8 +548,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	offerData
+		/**
+		 * @param fingerprint
+		 * @param offerData
+		 */
 		checkOfferValidity: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -546,9 +574,11 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	offer
-		// 	fee
+		/**
+		 * @param fingerprint
+		 * @param offer
+		 * @param fee
+		 */
 		takeOffer: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -571,8 +601,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	offerData
+		/**
+		 * @param fingerprint
+		 * @param offerData
+		 */
 		getOfferSummary: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -595,8 +627,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	offerId
+		/**
+		 * @param fingerprint
+		 * @param offerId
+		 */
 		getOfferData: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -619,8 +653,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	offerId
+		/**
+		 * @param fingerprint
+		 * @param offerId
+		 */
 		getOfferRecord: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -643,9 +679,11 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	amount
-		// 	fee
+		/**
+		 * @param fingerprint
+		 * @param amount
+		 * @param fee
+		 */
 		createNewCATWallet: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -668,8 +706,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	walletId
+		/**
+		 * @param fingerprint
+		 * @param walletId
+		 */
 		getCATAssetId: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -692,13 +732,15 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	walletId
-		// 	address
-		// 	amount
-		// 	fee
-		// 	memo: optional
-		// 	waitForConfirmation: optional
+		/**
+		 * @param fingerprint
+		 * @param walletId
+		 * @param address
+		 * @param amount
+		 * @param fee
+		 * @param memo: optional
+		 * @param waitForConfirmation: optional
+		 */
 		spendCAT: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -721,9 +763,11 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 		
-		// Params:
-		// 	assetId
-		// 	name
+		/**
+		 * @param fingerprint
+		 * @param assetId
+		 * @param name
+		 */
 		addCATToken: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -746,8 +790,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	walletIds
+		/**
+		 * @param fingerprint
+		 * @param walletIds
+		 */
 		getNFTs: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -770,8 +816,10 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	coinId
+		/**
+		 * @param fingerprint
+		 * @param coinId
+		 */
 		getNFTInfo: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
@@ -794,12 +842,14 @@ export function WalletConnectRpcContextProvider({children}: {
 			}
 		),
 
-		// Params:
-		// 	walletId
-		// 	nftCoinId
-		// 	launcherId
-		// 	targetAddress
-		// 	fee
+		/**
+		 * @param fingerprint
+		 * @param walletId
+		 * @param nftCoinId
+		 * @param launcherId
+		 * @param targetAddress
+		 * @param fee
+		 */
 		transferNFT: _createWalletConnectRpcRequestHandler(
 			async (
 				params: WalletConnectParams
