@@ -13,8 +13,8 @@ import {
 } from "react";
 
 import {
-	DEFAULT_CHIA_EVENTS,
-	DEFAULT_CHIA_METHODS,
+	CHIA_EVENTS,
+	CHIA_METHODS,
 	DEFAULT_APP_METADATA,
 	DEFAULT_LOGGER,
 	DEFAULT_PROJECT_ID,
@@ -61,6 +61,7 @@ export function WalletConnectClientContextProvider({children}: {
 
 	const reset = () => {
 		setSession(undefined);
+		setPairings([]);
 		setRelayerRegion(DEFAULT_RELAY_URL!);
 	};
 
@@ -80,18 +81,17 @@ export function WalletConnectClientContextProvider({children}: {
 			}
 			console.log("connect, pairing topic is:", pairing?.topic);
 			try {
-				const selectedNamespaces = ["chia:mainnet"]
+				const chain = ["chia:mainnet"]
 
-				const requiredNamespaces = Object.fromEntries(
-					selectedNamespaces.map((namespace) => [
-						namespace,
-						{
-							methods: Object.values(DEFAULT_CHIA_METHODS),
-							chains: selectedNamespaces,
-							events: Object.values(DEFAULT_CHIA_EVENTS),
-						},
-					])
-				);
+				const requiredNamespaces = {
+					'chia': {
+						methods: Object.values(CHIA_METHODS),
+						chains: ["chia:mainnet"],
+						events: Object.values(CHIA_EVENTS),
+					},
+				}
+
+				console.log("requiredNamespaces", requiredNamespaces)
 
 				const { uri, approval } = await client.connect({
 					pairingTopic: pairing?.topic,
@@ -147,14 +147,17 @@ export function WalletConnectClientContextProvider({children}: {
 		}
 
 		_client.on("session_ping", (args) => {
+			console.log("PING");
 			console.log("EVENT", "session_ping", args);
 		});
 
 		_client.on("session_event", (args) => {
+			console.log("Session Event");
 			console.log("EVENT", "session_event", args);
 		});
 
 		_client.on("session_update", ({ topic, params }) => {
+			console.log("Session Update");
 			console.log("EVENT", "session_update", { topic, params });
 			const { namespaces } = params;
 			const _session = _client.session.get(topic);
@@ -163,6 +166,7 @@ export function WalletConnectClientContextProvider({children}: {
 		});
 
 		_client.on("session_delete", () => {
+			console.log("Session Delete");
 			console.log("EVENT", "session_delete");
 			reset();
 		});
@@ -173,32 +177,32 @@ export function WalletConnectClientContextProvider({children}: {
 
 	const _checkPersistedState = useCallback(
 		async (_client: Client) => {
-		if (typeof _client === "undefined") {
-			throw new Error("WalletConnect is not initialized");
-		}
+			if (typeof _client === "undefined") {
+				throw new Error("WalletConnect is not initialized");
+			}
 
-		console.log(
-			"RESTORING CLIENT: ",
-			_client);
-		
-		// populates existing pairings to state
-		setPairings(_client.pairing.getAll({ active: true }));
-		console.log(
-			"RESTORED PAIRINGS: ",
-			_client.pairing.getAll({ active: true })
-		);
-
-		if (typeof session !== "undefined") return;
-		// populates (the last) existing session to state
-		if (_client.session.length) {
-			const lastKeyIndex = _client.session.keys.length - 1;
-			const _session = _client.session.get(
-				_client.session.keys[lastKeyIndex]
+			console.log(
+				"RESTORING CLIENT: ",
+				_client);
+			
+			// populates existing pairings to state
+			setPairings(_client.pairing.getAll({ active: true }));
+			console.log(
+				"RESTORED PAIRINGS: ",
+				_client.pairing.getAll({ active: true })
 			);
-			console.log("RESTORED SESSION:", _session);
-			await onSessionConnected(_session);
-			return _session;
-		}
+
+			if (typeof session !== "undefined") return;
+			// populates (the last) existing session to state
+			if (_client.session.length) {
+				const lastKeyIndex = _client.session.keys.length - 1;
+				const _session = _client.session.get(
+					_client.session.keys[lastKeyIndex]
+				);
+				console.log("RESTORED SESSION:", _session);
+				await onSessionConnected(_session);
+				return _session;
+			}
 		},
 		[session, onSessionConnected]
 	);
