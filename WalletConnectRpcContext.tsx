@@ -53,7 +53,7 @@ export type WalletConnectParams = {
 type TRpcRequestCallback = (params: WalletConnectParams) => Promise<void>;
 
 interface IContext {
-	ping: () => Promise<void>;
+	ping: () => Promise<boolean>;
 	walletconnectRpc: {
 		logIn: TRpcRequestCallback,
 		getWallets: TRpcRequestCallback,
@@ -82,6 +82,7 @@ interface IContext {
 		getNFTInfo: TRpcRequestCallback,
 		transferNFT: TRpcRequestCallback,
 	},
+	setChainId: React.Dispatch<React.SetStateAction<string>>,
 	rpcResult?: IFormattedRpcResponse | null;
 	isRpcRequestPending: boolean;
 }
@@ -144,27 +145,40 @@ export function WalletConnectRpcContextProvider({children}: {
 
 		try {
 			setPending(true);
-			let valid = false;
 			try {
 				await client.ping({ topic: session.topic });
-				valid = true;
+				return true;
 			} catch (e) {
-				valid = false;
+				return false;
 			}
-
-			// display result
-			setResult({
-				method: "ping",
-				valid,
-				result: valid ? "Ping succeeded" : "Ping failed",
-			});
 		} catch (e) {
 			console.error(e);
-			setResult(null);
+			return false;
 		} finally {
 			setPending(false);
 		}
 	};
+
+	const standardRequest = (method: string): (params: WalletConnectParams) => Promise<IFormattedRpcResponse> => {
+		return async (
+			params: WalletConnectParams
+		): Promise<IFormattedRpcResponse> => {
+			const result = await client!.request({
+				topic: session!.topic,
+				chainId,
+				request: {
+					method,
+					params: params,
+				},
+			});
+
+			return {
+				method,
+				valid: true,
+				result: JSON.stringify(result),
+			};
+		}
+	}
 
 
 	const walletconnectRpc = {
@@ -172,130 +186,29 @@ export function WalletConnectRpcContextProvider({children}: {
 		/**
 		 * @param fingerprint
 		 */
-		logIn: _createWalletConnectRpcRequestHandler(
-			
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_LOG_IN;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		logIn: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_LOG_IN)),
 		
 		/**
 		 * @param fingerprint
 		 */
-		getWallets: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_WALLETS;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getWallets: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_WALLETS)),
 
 		/**
 		 * @param fingerprint
 		 */
-		getTransaction: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_WALLETS;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getTransaction: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_WALLETS)),
 
 		/**
 		 * @param fingerprint
 		 * @param walletId: optional
 		 */
-		getWalletBalance: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_WALLET_BALANCE;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getWalletBalance: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_WALLET_BALANCE)),
 
 		/**
 		 * @param fingerprint
 		 * @param walletId: optional
 		 */
-		getCurrentAddress: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_CURRENT_ADDRESS;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getCurrentAddress: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_CURRENT_ADDRESS)),
 
 		/**
 		 * @param fingerprint
@@ -305,134 +218,34 @@ export function WalletConnectRpcContextProvider({children}: {
 		 * @param walletId
 		 * @param waitForConfirmation: optional
 		 */
-		sendTransaction: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_SEND_TRANSACTION;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		sendTransaction: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_SEND_TRANSACTION)),
 
 		/**
 		 * @param fingerprint
 		 * @param id
 		 * @param message
 		 */
-		signMessageById: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_SIGN_MESSAGE_BY_ID;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		signMessageById: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_SIGN_MESSAGE_BY_ID)),
 
 		/**
 		 * @param fingerprint
 		 * @param address
 		 * @param amount
 		 */
-		signMessageByAddress: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_SIGN_MESSAGE_BY_ADDRESS;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		signMessageByAddress: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_SIGN_MESSAGE_BY_ADDRESS)),
 
 		/**
 		 * @param fingerprint
 		 * @param walletId: optional
 		 * @param newAddress: optional
 		 */
-		getNextAddress: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_NEXT_ADDRESS;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getNextAddress: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_NEXT_ADDRESS)),
 
 		/**
 		 * @param fingerprint
 		 * @param None
 		 */
-		getSyncStatus: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_SYNC_STATUS;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getSyncStatus: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_SYNC_STATUS)),
 
 		/**
 		 * @param fingerprint
@@ -443,53 +256,13 @@ export function WalletConnectRpcContextProvider({children}: {
 		 * @param includeMyOffers: optional
 		 * @param includeTakenOffers: optional
 		 */
-		getAllOffers: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_ALL_OFFERS;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getAllOffers: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_ALL_OFFERS)),
 
 		/**
 		 * @param fingerprint
 		 * @param None
 		 */
-		getOffersCount: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_OFFERS_COUNT;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getOffersCount: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_OFFERS_COUNT)),
 
 		/**
 		 * @param fingerprint
@@ -498,27 +271,7 @@ export function WalletConnectRpcContextProvider({children}: {
 		 * @param validateOnly: optional
 		 * @param disableJSONFormatting: optional
 		 */
-		createOfferForIds: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_CREATE_OFFER_FOR_IDS;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		createOfferForIds: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_CREATE_OFFER_FOR_IDS)),
 
 		/**
 		 * @param fingerprint
@@ -526,211 +279,51 @@ export function WalletConnectRpcContextProvider({children}: {
 		 * @param secure
 		 * @param fee
 		 */
-		cancelOffer: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_CANCEL_OFFER;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		cancelOffer: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_CANCEL_OFFER)),
 
 		/**
 		 * @param fingerprint
 		 * @param offerData
 		 */
-		checkOfferValidity: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_CHECK_OFFER_VALIDITY;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		checkOfferValidity: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_CHECK_OFFER_VALIDITY)),
 
 		/**
 		 * @param fingerprint
 		 * @param offer
 		 * @param fee
 		 */
-		takeOffer: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_TAKE_OFFER;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		takeOffer: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_TAKE_OFFER)),
 
 		/**
 		 * @param fingerprint
 		 * @param offerData
 		 */
-		getOfferSummary: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_OFFER_SUMMARY;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getOfferSummary: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_OFFER_SUMMARY)),
 
 		/**
 		 * @param fingerprint
 		 * @param offerId
 		 */
-		getOfferData: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_OFFER_DATA;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getOfferData: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_OFFER_DATA)),
 
 		/**
 		 * @param fingerprint
 		 * @param offerId
 		 */
-		getOfferRecord: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_OFFER_RECORD;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getOfferRecord: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_OFFER_RECORD)),
 
 		/**
 		 * @param fingerprint
 		 * @param amount
 		 * @param fee
 		 */
-		createNewCATWallet: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_CREATE_NEW_CAT_WALLET;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		createNewCATWallet: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_CREATE_NEW_CAT_WALLET)),
 
 		/**
 		 * @param fingerprint
 		 * @param walletId
 		 */
-		getCATAssetId: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_CAT_ASSET_ID;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getCATAssetId: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_CAT_ASSET_ID)),
 
 		/**
 		 * @param fingerprint
@@ -741,106 +334,26 @@ export function WalletConnectRpcContextProvider({children}: {
 		 * @param memo: optional
 		 * @param waitForConfirmation: optional
 		 */
-		spendCAT: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_SPEND_CAT;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		spendCAT: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_SPEND_CAT)),
 		
 		/**
 		 * @param fingerprint
 		 * @param assetId
 		 * @param name
 		 */
-		addCATToken: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_ADD_CAT_TOKEN;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		addCATToken: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_ADD_CAT_TOKEN)),
 
 		/**
 		 * @param fingerprint
 		 * @param walletIds
 		 */
-		getNFTs: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_NFTS;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getNFTs: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_NFTS)),
 
 		/**
 		 * @param fingerprint
 		 * @param coinId
 		 */
-		getNFTInfo: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_GET_NFT_INFO;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		getNFTInfo: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_GET_NFT_INFO)),
 
 		/**
 		 * @param fingerprint
@@ -850,27 +363,7 @@ export function WalletConnectRpcContextProvider({children}: {
 		 * @param targetAddress
 		 * @param fee
 		 */
-		transferNFT: _createWalletConnectRpcRequestHandler(
-			async (
-				params: WalletConnectParams
-			): Promise<IFormattedRpcResponse> => {
-				const method = CHIA_METHODS.CHIA_TRANSFER_NFT;
-				const result = await client!.request({
-					topic: session!.topic,
-					chainId,
-					request: {
-						method,
-						params: params,
-					},
-				});
-		
-				return {
-					method,
-					valid: true,
-					result: JSON.stringify(result),
-				};
-			}
-		),
+		transferNFT: _createWalletConnectRpcRequestHandler(standardRequest(CHIA_METHODS.CHIA_TRANSFER_NFT)),
 		
 	};
 
@@ -881,6 +374,7 @@ export function WalletConnectRpcContextProvider({children}: {
 				walletconnectRpc,
 				rpcResult: result,
 				isRpcRequestPending: pending,
+				setChainId,
 			}}
 			>
 			{children}
