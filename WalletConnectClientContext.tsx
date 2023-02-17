@@ -1,6 +1,7 @@
 import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
 import QRCodeModal from "@walletconnect/qrcode-modal";
+import wc_config from "../walletconnectconfig.json";
 import {
 	createContext,
 	ReactNode,
@@ -15,9 +16,7 @@ import {
 import {
 	CHIA_EVENTS,
 	CHIA_METHODS,
-	DEFAULT_APP_METADATA,
 	DEFAULT_LOGGER,
-	DEFAULT_PROJECT_ID,
 	DEFAULT_RELAY_URL,
 } from "./constants";
 import { getSdkError } from "@walletconnect/utils";
@@ -52,7 +51,7 @@ export function WalletConnectClientContextProvider({children}: {
 	const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
 	const [session, setSession] = useState<SessionTypes.Struct>();
 
-	const [isInitializing, setIsInitializing] = useState(false);
+	const [isInitializing, setIsInitializing] = useState(true);
 	const prevRelayerValue = useRef<string>("");
 
 	const [relayerRegion, setRelayerRegion] = useState<string>(
@@ -208,12 +207,12 @@ export function WalletConnectClientContextProvider({children}: {
 	const createClient = useCallback(async () => {
 		try {
 			setIsInitializing(true);
-			
+
 			const _client = await Client.init({
 				logger: DEFAULT_LOGGER,
 				relayUrl: relayerRegion,
-				projectId: DEFAULT_PROJECT_ID,
-				metadata: DEFAULT_APP_METADATA,
+				projectId: wc_config.project_id,
+				metadata: wc_config.metadata,
 			});
 
 			console.log("CREATED CLIENT: ", _client);

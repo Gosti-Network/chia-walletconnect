@@ -14,7 +14,7 @@ interface IFormattedRpcResponse {
 	result: string;
 }
 
-export type WalletConnectParams = {
+export type WalletConnectRpcParams = {
 	address: string,
 	amount: number,
 	assetId: string,
@@ -50,7 +50,7 @@ export type WalletConnectParams = {
 	walletIdsAndAmounts: object,
 }
 
-type TRpcRequestCallback = (params: WalletConnectParams) => Promise<void>;
+type TRpcRequestCallback = (params: WalletConnectRpcParams) => Promise<void>;
 
 interface IContext {
 	ping: () => Promise<boolean>;
@@ -108,10 +108,10 @@ export function WalletConnectRpcContextProvider({children}: {
 	const _createWalletConnectRpcRequestHandler =
 		(
 			rpcRequest: (
-				params: WalletConnectParams
+				params: WalletConnectRpcParams
 			) => Promise<IFormattedRpcResponse>
 		) =>
-		async (params: WalletConnectParams) => {
+		async (params: WalletConnectRpcParams) => {
 			if (typeof client === "undefined") {
 				throw new Error("WalletConnect is not initialized");
 			}
@@ -159,9 +159,9 @@ export function WalletConnectRpcContextProvider({children}: {
 		}
 	};
 
-	const standardRequest = (method: string): (params: WalletConnectParams) => Promise<IFormattedRpcResponse> => {
+	const standardRequest = (method: string): (params: WalletConnectRpcParams) => Promise<IFormattedRpcResponse> => {
 		return async (
-			params: WalletConnectParams
+			params: WalletConnectRpcParams
 		): Promise<IFormattedRpcResponse> => {
 			const result = await client!.request({
 				topic: session!.topic,

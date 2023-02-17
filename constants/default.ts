@@ -6,8 +6,6 @@ export const DEFAULT_TEST_CHAINS = [
 	"chia:testnet"
 ];
 
-export const DEFAULT_PROJECT_ID = '87af2d227d63f4dbf4a8ac6b7e3f763c';
-
 export const DEFAULT_LOGGER = "debug";
 
 export enum CHIA_METHODS {
@@ -40,12 +38,6 @@ export enum CHIA_METHODS {
 
 export enum CHIA_EVENTS {}
 
-export const DEFAULT_APP_METADATA = {
-	name: "Spriggan Marketplace Dapp",
-	description: "Connection to Spriggan Marketplace",
-	url: "",
-	icons: ["https://avatars.githubusercontent.com/u/37784886"],
-};
 
 type RelayerType = {
 	value: string | undefined;
