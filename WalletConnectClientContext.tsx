@@ -83,18 +83,15 @@ export function WalletConnectClientContextProvider({children}: {
 				const requiredNamespaces = {
 					'chia': {
 						methods: Object.values(CHIA_METHODS),
-						chains: ["chia:mainnet"],
+						chains: ["chia:testnet"],
 						events: Object.values(CHIA_EVENTS),
 					},
 				}
-
 				console.log("requiredNamespaces", requiredNamespaces)
-
 				const { uri, approval } = await client.connect({
 					pairingTopic: pairing?.topic,
 					requiredNamespaces,
 				});
-
 				// Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
 				if (uri) {
 					QRCodeModal.open(uri, () => {
@@ -108,7 +105,7 @@ export function WalletConnectClientContextProvider({children}: {
 				// Update known pairings after session is connected.
 				setPairings(client.pairing.getAll({ active: true }));
 			} catch (e) {
-				console.error(e);
+				disconnect();
 				// ignore rejection
 			} finally {
 				// close modal in case it was open

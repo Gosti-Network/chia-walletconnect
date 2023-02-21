@@ -4,6 +4,8 @@ import { useWalletConnectClient } from "./WalletConnectClientContext";
 
 import { CHIA_METHODS } from "./constants";
 
+import { RpcResult } from "./types";
+
 /**
  * Types
  */
@@ -11,7 +13,7 @@ interface IFormattedRpcResponse {
 	method?: string;
 	address?: string;
 	valid: boolean;
-	result: string;
+	result: RpcResult;
 }
 
 export type WalletConnectRpcParams = {
@@ -50,7 +52,7 @@ export type WalletConnectRpcParams = {
 	walletIdsAndAmounts: object,
 }
 
-type TRpcRequestCallback = (params: WalletConnectRpcParams) => Promise<void>;
+type TRpcRequestCallback = (params: WalletConnectRpcParams) => Promise<IFormattedRpcResponse>;
 
 interface IContext {
 	ping: () => Promise<boolean>;
@@ -100,7 +102,7 @@ export function WalletConnectRpcContextProvider({children}: {
 }) {
 	const [pending, setPending] = useState(false);
 	const [result, setResult] = useState<IFormattedRpcResponse | null>();
-	const [chainId, setChainId] = useState<string>("chia:mainnet")
+	const [chainId, setChainId] = useState<string>("chia:testnet")
 
 	const { client, session } =
 		useWalletConnectClient();
@@ -111,7 +113,7 @@ export function WalletConnectRpcContextProvider({children}: {
 				params: WalletConnectRpcParams
 			) => Promise<IFormattedRpcResponse>
 		) =>
-		async (params: WalletConnectRpcParams) => {
+		async (params: WalletConnectRpcParams): Promise<IFormattedRpcResponse> => {
 			if (typeof client === "undefined") {
 				throw new Error("WalletConnect is not initialized");
 			}
@@ -123,12 +125,15 @@ export function WalletConnectRpcContextProvider({children}: {
 				setPending(true);
 				const result = await rpcRequest(params);
 				setResult(result);
+				return result
 			} catch (err: any) {
 				console.error("RPC request failed: ", err);
-				setResult({
+				const errorMessage = {
 					valid: false,
 					result: err?.message ?? err,
-				});
+				}
+				setResult(errorMessage);
+				return errorMessage;
 			} finally {
 				setPending(false);
 			}
@@ -175,8 +180,8 @@ export function WalletConnectRpcContextProvider({children}: {
 			return {
 				method,
 				valid: true,
-				result: JSON.stringify(result),
-			};
+				result: result,
+			} as IFormattedRpcResponse;
 		}
 	}
 

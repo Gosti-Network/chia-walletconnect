@@ -1,10 +1,3 @@
-export const DEFAULT_MAIN_CHAINS = [
-	"chia:mainnet",
-];
-
-export const DEFAULT_TEST_CHAINS = [
-	"chia:testnet"
-];
 
 export const DEFAULT_LOGGER = "debug";
 
