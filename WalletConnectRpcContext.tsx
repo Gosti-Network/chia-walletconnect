@@ -97,9 +97,9 @@ export const WalletConnectRpcContext = createContext<IContext>({} as IContext);
 /**
  * Provider
  */
-export function WalletConnectRpcContextProvider({children}: {
+export const WalletConnectRpcContextProvider = ({children}: {
 	children: ReactNode | ReactNode[];
-}) {
+}) => {
 	const [pending, setPending] = useState(false);
 	const [result, setResult] = useState<IFormattedRpcResponse | null>();
 	const [chainId, setChainId] = useState<string>("chia:testnet")
@@ -387,7 +387,7 @@ export function WalletConnectRpcContextProvider({children}: {
 	);
 }
 
-export function useWalletConnectRpc() {
+export const useWalletConnectRpc = () => {
 	const context = useContext(WalletConnectRpcContext);
 	if (context === undefined) {
 		throw new Error("useWalletConnectRpc must be used within a WalletConnectRpcContextProvider");

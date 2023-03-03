@@ -44,9 +44,9 @@ export const WalletConnectClientContext = createContext<IContext>({} as IContext
 /**
  * Provider
  */
-export function WalletConnectClientContextProvider({children}: {
+export const WalletConnectClientContextProvider = ({children}: {
 	children: ReactNode | ReactNode[];
-}) {
+}) => {
 	const [client, setClient] = useState<Client>();
 	const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
 	const [session, setSession] = useState<SessionTypes.Struct>();
@@ -266,7 +266,7 @@ export function WalletConnectClientContextProvider({children}: {
 	);
 }
 
-export function useWalletConnectClient() {
+export const useWalletConnectClient = () => {
 	const context = useContext(WalletConnectClientContext);
 	if (context === undefined) {
 		throw new Error(
