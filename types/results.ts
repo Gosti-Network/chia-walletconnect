@@ -1,4 +1,3 @@
-
 export enum WalletType {
 	STANDARD = 0,
 	RATE_LIMITED = 1,
@@ -15,7 +14,6 @@ export enum WalletType {
 	DATALAYEROFFER = 12,
 }
 
-
 export type RpcResult = {
 	data: GetWalletsResult[] | GetNftsResult;
 	endpointName: string;
@@ -26,8 +24,7 @@ export type RpcResult = {
 	isUninitialized: boolean;
 	originalArgs: object;
 	startedTimeStamp: number;
-}
-
+};
 
 export type GetWalletsResult = {
 	data: string;
@@ -35,17 +32,16 @@ export type GetWalletsResult = {
 	meta: WalletMetadata;
 	name: string;
 	type: WalletType;
-}
+};
 
 export type WalletMetadata = {
 	assetId: string;
 	name: string;
-}
-
+};
 
 export type GetNftsResult = {
-	id: Nft[]
-}
+	id: Nft[];
+};
 
 export type Nft = {
 	$nftId: string;
@@ -72,4 +68,4 @@ export type Nft = {
 	supportsDid: boolean;
 	updaterPuzhash: string;
 	walletId: number;
-}
+};

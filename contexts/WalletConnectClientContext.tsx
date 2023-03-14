@@ -1,7 +1,7 @@
+import QRCodeModal from "@walletconnect/qrcode-modal";
 import Client from "@walletconnect/sign-client";
 import { PairingTypes, SessionTypes } from "@walletconnect/types";
-import QRCodeModal from "@walletconnect/qrcode-modal";
-import wc_config from "../walletconnectconfig.json";
+import { getSdkError } from "@walletconnect/utils";
 import {
 	createContext,
 	ReactNode,
@@ -13,13 +13,15 @@ import {
 	useRef,
 } from "react";
 
+import wc_config from "../../walletconnectconfig.json";
 import {
-	CHIA_EVENTS,
-	CHIA_METHODS,
+	ChiaEvents,
+	ChiaMethods,
 	DEFAULT_LOGGER,
 	DEFAULT_RELAY_URL,
-} from "./constants";
-import { getSdkError } from "@walletconnect/utils";
+} from "../constants";
+
+
 
 
 /**
@@ -44,9 +46,9 @@ export const WalletConnectClientContext = createContext<IContext>({} as IContext
 /**
  * Provider
  */
-export const WalletConnectClientContextProvider = ({children}: {
+export function WalletConnectClientContextProvider({ children }: {
 	children: ReactNode | ReactNode[];
-}) => {
+}) {
 	const [client, setClient] = useState<Client>();
 	const [pairings, setPairings] = useState<PairingTypes.Struct[]>([]);
 	const [session, setSession] = useState<SessionTypes.Struct>();
@@ -72,49 +74,6 @@ export const WalletConnectClientContextProvider = ({children}: {
 		[]
 	);
 
-	const connect = useCallback(
-		async (pairing: any) => {
-			console.log("pairing:", pairing);
-			if (typeof client === "undefined") {
-				throw new Error("WalletConnect is not initialized");
-			}
-			console.log("connect, pairing topic is:", pairing?.topic);
-			try {
-				const requiredNamespaces = {
-					'chia': {
-						methods: Object.values(CHIA_METHODS),
-						chains: ["chia:testnet"],
-						events: Object.values(CHIA_EVENTS),
-					},
-				}
-				console.log("requiredNamespaces", requiredNamespaces)
-				const { uri, approval } = await client.connect({
-					pairingTopic: pairing?.topic,
-					requiredNamespaces,
-				});
-				// Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
-				if (uri) {
-					QRCodeModal.open(uri, () => {
-						console.log("EVENT", "QR Code Modal closed");
-					});
-				}
-
-				const session = await approval();
-				console.log("Established session:", session);
-				await onSessionConnected(session);
-				// Update known pairings after session is connected.
-				setPairings(client.pairing.getAll({ active: true }));
-			} catch (e) {
-				disconnect();
-				// ignore rejection
-			} finally {
-				// close modal in case it was open
-				QRCodeModal.close();
-			}
-		},
-		[client, onSessionConnected]
-	);
-
 	const disconnect = useCallback(async () => {
 		if (typeof client === "undefined") {
 			throw new Error("WalletConnect is not initialized");
@@ -128,74 +87,113 @@ export const WalletConnectClientContextProvider = ({children}: {
 				reason: getSdkError("USER_DISCONNECTED"),
 			});
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 		}
 		// Reset app state after disconnect.
 		reset();
 	}, [client, session]);
 
-	const _subscribeToEvents = useCallback(
-		async (_client: Client) => {
-		if (typeof _client === "undefined") {
-			throw new Error("WalletConnect is not initialized");
-		}
+	const connect = useCallback(
+		async (pairing: any) => {
+			console.log("pairing:", pairing);
+			if (typeof client === "undefined") {
+				throw new Error("WalletConnect is not initialized");
+			}
+			console.log("connect, pairing topic is:", pairing?.topic);
+			try {
+				const requiredNamespaces = {
+					'chia': {
+						methods: Object.values(ChiaMethods),
+						chains: ["chia:testnet"],
+						events: Object.values(ChiaEvents),
+					},
+				};
+				console.log("requiredNamespaces", requiredNamespaces);
+				const { uri, approval } = await client.connect({
+					pairingTopic: pairing?.topic,
+					requiredNamespaces,
+				});
+				// Open QRCode modal if a URI was returned (i.e. we're not connecting an existing pairing).
+				if (uri) {
+					QRCodeModal.open(uri, () => {
+						console.log("EVENT", "QR Code Modal closed");
+					});
+				}
 
-		_client.on("session_ping", (args) => {
-			console.log("PING");
-			console.log("EVENT", "session_ping", args);
-		});
+				const sess = await approval();
+				console.log("Established session:", sess);
+				await onSessionConnected(sess);
+				// Update known pairings after session is connected.
+				setPairings(client.pairing.getAll({ active: true }));
+			} catch (e) {
+				disconnect();
+				// ignore rejection
+			} finally {
+				// close modal in case it was open
+				QRCodeModal.close();
+			}
+		},
+		[client, disconnect, onSessionConnected]
+	);
 
-		_client.on("session_event", (args) => {
-			console.log("Session Event");
-			console.log("EVENT", "session_event", args);
-		});
 
-		_client.on("session_update", ({ topic, params }) => {
-			console.log("Session Update");
-			console.log("EVENT", "session_update", { topic, params });
-			const { namespaces } = params;
-			const _session = _client.session.get(topic);
-			const updatedSession = { ..._session, namespaces };
-			onSessionConnected(updatedSession);
-		});
+	const subscribeToEvents = useCallback(
+		async (newClient: Client) => {
+			if (typeof newClient === "undefined") {
+				throw new Error("WalletConnect is not initialized");
+			}
 
-		_client.on("session_delete", () => {
-			console.log("Session Delete");
-			console.log("EVENT", "session_delete");
-			reset();
-		});
+			newClient.on("session_ping", (args) => {
+				console.log("PING");
+				console.log("EVENT", "session_ping", args);
+			});
+
+			newClient.on("session_event", (args) => {
+				console.log("Session Event");
+				console.log("EVENT", "session_event", args);
+			});
+
+			newClient.on("session_update", ({ topic, params }) => {
+				console.log("Session Update");
+				console.log("EVENT", "session_update", { topic, params });
+				const { namespaces } = params;
+				const sess = newClient.session.get(topic);
+				const updatedSession = { ...sess, namespaces };
+				onSessionConnected(updatedSession);
+			});
+
+			newClient.on("session_delete", () => {
+				console.log("Session Delete");
+				console.log("EVENT", "session_delete");
+				reset();
+			});
 
 		},
 		[onSessionConnected]
 	);
 
-	const _checkPersistedState = useCallback(
-		async (_client: Client) => {
-			if (typeof _client === "undefined") {
+	const checkPersistedState = useCallback(
+		async (newClient: Client) => {
+			if (typeof newClient === "undefined") {
 				throw new Error("WalletConnect is not initialized");
 			}
 
-			console.log(
-				"RESTORING CLIENT: ",
-				_client);
-			
+			console.log("RESTORING CLIENT: ", newClient);
+
 			// populates existing pairings to state
-			setPairings(_client.pairing.getAll({ active: true }));
-			console.log(
-				"RESTORED PAIRINGS: ",
-				_client.pairing.getAll({ active: true })
-			);
+			setPairings(newClient.pairing.getAll({ active: true }));
+
+			console.log("RESTORED PAIRINGS: ", newClient.pairing.getAll({ active: true }));
 
 			if (typeof session !== "undefined") return;
 			// populates (the last) existing session to state
-			if (_client.session.length) {
-				const lastKeyIndex = _client.session.keys.length - 1;
-				const _session = _client.session.get(
-					_client.session.keys[lastKeyIndex]
+			if (newClient.session.length) {
+				const lastKeyIndex = newClient.session.keys.length - 1;
+				const newSession = newClient.session.get(
+					newClient.session.keys[lastKeyIndex]
 				);
-				console.log("RESTORED SESSION:", _session);
-				await onSessionConnected(_session);
-				return _session;
+				console.log("RESTORED SESSION:", newSession);
+				await onSessionConnected(newSession);
 			}
 		},
 		[session, onSessionConnected]
@@ -205,32 +203,33 @@ export const WalletConnectClientContextProvider = ({children}: {
 		try {
 			setIsInitializing(true);
 
-			const _client = await Client.init({
+			const newClient = await Client.init({
 				logger: DEFAULT_LOGGER,
 				relayUrl: relayerRegion,
 				projectId: wc_config.project_id,
 				metadata: wc_config.metadata,
 			});
 
-			console.log("CREATED CLIENT: ", _client);
+			console.log("CREATED CLIENT: ", newClient);
 			console.log("relayerRegion ", relayerRegion);
-			setClient(_client);
+			setClient(newClient);
 			prevRelayerValue.current = relayerRegion;
-			await _subscribeToEvents(_client);
-			await _checkPersistedState(_client);
+			await subscribeToEvents(newClient);
+			await checkPersistedState(newClient);
 		} catch (err) {
+			console.error(err);
 			throw err;
 		} finally {
 			setIsInitializing(false);
 		}
-	}, [_checkPersistedState, _subscribeToEvents, relayerRegion]);
+	}, [checkPersistedState, subscribeToEvents, relayerRegion]);
 
 	useEffect(() => {
 		if (!client || prevRelayerValue.current !== relayerRegion) {
 			createClient();
 		}
 	}, [client, createClient, relayerRegion]);
-	
+
 
 	const value = useMemo(
 		() => ({
@@ -257,16 +256,16 @@ export const WalletConnectClientContextProvider = ({children}: {
 
 	return (
 		<WalletConnectClientContext.Provider
-		value={{
-			...value,
-		}}
+			value={{
+				...value,
+			}}
 		>
 			{children}
 		</WalletConnectClientContext.Provider>
 	);
 }
 
-export const useWalletConnectClient = () => {
+export function useWalletConnectClient() {
 	const context = useContext(WalletConnectClientContext);
 	if (context === undefined) {
 		throw new Error(
