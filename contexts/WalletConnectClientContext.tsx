@@ -75,15 +75,16 @@ export function WalletConnectClientContextProvider({ children }: {
 	);
 
 	const disconnect = useCallback(async () => {
-		if (typeof client === "undefined") {
-			throw new Error("WalletConnect is not initialized");
-		}
-		if (typeof session === "undefined") {
-			throw new Error("Session is not connected");
-		}
+		// if (typeof client === "undefined") {
+		// 	throw new Error("WalletConnect is not initialized");
+		// }
+		// if (typeof session === "undefined") {
+		// 	throw new Error("Session is not connected");
+		// }
 		try {
-			await client.disconnect({
-				topic: session.topic,
+
+			await client?.disconnect({
+				topic: session ? session.topic : "",
 				reason: getSdkError("USER_DISCONNECTED"),
 			});
 		} catch (error) {
