@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 
 import { ChiaMethods } from "../constants";
-import { RpcResult } from "../types";
+import { GetNftsResult, GetWalletsResult, SignMessageByIdResult } from "../types";
 import { useWalletConnectClient } from "./WalletConnectClientContext";
 
 
@@ -12,7 +12,7 @@ interface IFormattedRpcResponse {
 	method?: string;
 	address?: string;
 	valid: boolean;
-	result: RpcResult;
+	result: GetNftsResult | GetWalletsResult | SignMessageByIdResult;
 }
 
 export type WalletConnectRpcParams = {
@@ -58,7 +58,6 @@ interface IContext {
 	walletconnectRpc: {
 		logIn: TRpcRequestCallback,
 		getWallets: TRpcRequestCallback,
-		getTransaction: TRpcRequestCallback,
 		getWalletBalance: TRpcRequestCallback,
 		getCurrentAddress: TRpcRequestCallback,
 		sendTransaction: TRpcRequestCallback,
@@ -194,11 +193,6 @@ export function WalletConnectRpcContextProvider({ children }: {
 		 * @param fingerprint
 		 */
 		getWallets: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_GET_WALLETS)),
-
-		/**
-		 * @param fingerprint
-		 */
-		getTransaction: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_GET_WALLETS)),
 
 		/**
 		 * @param fingerprint
