@@ -14,8 +14,16 @@ export enum WalletType {
 	DATALAYEROFFER = 12,
 }
 
-export type RpcResult = {
-	data: GetWalletsResult[] | GetNftsResult;
+export type GetWalletsResult = {
+	data: [
+		{
+			data: string;
+			id: number;
+			meta: WalletMetadata;
+			name: string;
+			type: WalletType;
+		}
+	];
 	endpointName: string;
 	fulfilledTimeStamp: number;
 	isError: boolean;
@@ -26,21 +34,36 @@ export type RpcResult = {
 	startedTimeStamp: number;
 };
 
-export type GetWalletsResult = {
-	data: string;
-	id: number;
-	meta: WalletMetadata;
-	name: string;
-	type: WalletType;
-};
-
 export type WalletMetadata = {
 	assetId: string;
 	name: string;
 };
 
 export type GetNftsResult = {
-	id: Nft[];
+	data: { id: Nft[] };
+	endpointName: string;
+	fulfilledTimeStamp: number;
+	isError: boolean;
+	isLoading: boolean;
+	isSuccess: boolean;
+	isUninitialized: boolean;
+	originalArgs: object;
+	startedTimeStamp: number;
+};
+
+export type SignMessageByIdResult = {
+	data: {
+		signature: string;
+		pubkey: string;
+	};
+	endpointName: string;
+	fulfilledTimeStamp: number;
+	isError: boolean;
+	isLoading: boolean;
+	isSuccess: boolean;
+	isUninitialized: boolean;
+	originalArgs: object;
+	startedTimeStamp: number;
 };
 
 export type Nft = {
