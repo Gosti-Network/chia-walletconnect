@@ -83,7 +83,7 @@ interface IContext {
 		transferNFT: TRpcRequestCallback,
 	},
 	setChainId: React.Dispatch<React.SetStateAction<string>>,
-	rpcResult?: IFormattedRpcResponse | null;
+	walletconnectRpcResult?: IFormattedRpcResponse | null;
 	isRpcRequestPending: boolean;
 }
 
@@ -368,7 +368,7 @@ export function WalletConnectRpcContextProvider({ children }: {
 			value={{
 				ping,
 				walletconnectRpc,
-				rpcResult: result,
+				walletconnectRpcResult: result,
 				isRpcRequestPending: pending,
 				setChainId,
 			}}
