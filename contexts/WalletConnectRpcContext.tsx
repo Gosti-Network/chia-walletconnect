@@ -1,8 +1,8 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 
-import { useWalletConnectClient } from "./WalletConnectClientContext";
 import { ChiaMethods } from "../constants";
 import { RpcResult } from "../types";
+import { useWalletConnectClient } from "./WalletConnectClientContext";
 
 
 /**
