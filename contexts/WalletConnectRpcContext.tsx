@@ -58,11 +58,13 @@ interface IContext {
 	walletconnectRpc: {
 		logIn: TRpcRequestCallback,
 		getWallets: TRpcRequestCallback,
+		getTransaction: TRpcRequestCallback,
 		getWalletBalance: TRpcRequestCallback,
 		getCurrentAddress: TRpcRequestCallback,
 		sendTransaction: TRpcRequestCallback,
 		signMessageById: TRpcRequestCallback,
 		signMessageByAddress: TRpcRequestCallback,
+		verifySignature: TRpcRequestCallback,
 		getNextAddress: TRpcRequestCallback,
 		getSyncStatus: TRpcRequestCallback,
 		getAllOffers: TRpcRequestCallback,
@@ -75,12 +77,18 @@ interface IContext {
 		getOfferData: TRpcRequestCallback,
 		getOfferRecord: TRpcRequestCallback,
 		createNewCATWallet: TRpcRequestCallback,
+		getCATWalletInfo: TRpcRequestCallback,
 		getCATAssetId: TRpcRequestCallback,
 		spendCAT: TRpcRequestCallback,
 		addCATToken: TRpcRequestCallback,
 		getNFTs: TRpcRequestCallback,
 		getNFTInfo: TRpcRequestCallback,
-		transferNFT: TRpcRequestCallback,
+		transferNFT: TRpcRequestCallback
+		getNFTsCount: TRpcRequestCallback,
+		createNewDIDWallet: TRpcRequestCallback,
+		setDIDName: TRpcRequestCallback,
+		setNFTDID: TRpcRequestCallback,
+		getNFTWalletsWithDIDs: TRpcRequestCallback,
 	},
 	setChainId: React.Dispatch<React.SetStateAction<string>>,
 	rpcResult?: IFormattedRpcResponse | null;
@@ -196,6 +204,12 @@ export function WalletConnectRpcContextProvider({ children }: {
 
 		/**
 		 * @param fingerprint
+		 * @param transactionId
+		 */
+		getTransaction: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_GET_TRANSACTION)),
+
+		/**
+		 * @param fingerprint
 		 * @param walletId: optional
 		 */
 		getWalletBalance: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_GET_WALLET_BALANCE)),
@@ -229,6 +243,16 @@ export function WalletConnectRpcContextProvider({ children }: {
 		 * @param amount
 		 */
 		signMessageByAddress: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_SIGN_MESSAGE_BY_ADDRESS)),
+
+		/**
+		 * @param fingerprint
+		 * @param message
+		 * @param pubkey
+		 * @param signature
+		 * @param address: optional
+		 * @param signingMode: optional
+		 */
+		verifySignature: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_VERIFY_SIGNATURE)),
 
 		/**
 		 * @param fingerprint
@@ -317,6 +341,12 @@ export function WalletConnectRpcContextProvider({ children }: {
 
 		/**
 		 * @param fingerprint
+		 * @param assetId
+		 */
+		getCATWalletInfo: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_GET_CAT_WALLET_INFO)),
+
+		/**
+		 * @param fingerprint
 		 * @param walletId
 		 */
 		getCATAssetId: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_GET_CAT_ASSET_ID)),
@@ -360,6 +390,43 @@ export function WalletConnectRpcContextProvider({ children }: {
 		 * @param fee
 		 */
 		transferNFT: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_TRANSFER_NFT)),
+
+		/**
+		 * @param fingerprint
+		 * @param walletIds
+		 */
+		getNFTsCount: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_GET_NFTS_COUNT)),
+
+		/**
+		 * @param fingerprint
+		 * @param amount
+		 * @param fee
+		 * @param backupDIDs
+		 * @param numOfBackupIdsNeeded
+		 */
+		createNewDIDWallet: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_CREATE_NEW_DID_WALLET)),
+
+		/**
+		 * @param fingerprint
+		 * @param walletId
+		 * @param name
+		 */
+		setDIDName: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_SET_DID_NAME)),
+
+		/**
+		 * @param fingerprint
+		 * @param walletId
+		 * @param nftLauncherId
+		 * @param nftCoinIds
+		 * @param did
+		 * @param fee
+		 */
+		setNFTDID: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_SET_NFT_DID)),
+
+		/**
+		 * @param fingerprint
+		 */
+		getNFTWalletsWithDIDs: createWalletConnectRpcRequestHandler(standardRequest(ChiaMethods.CHIA_GET_NFT_WALLETS_WITH_DIDS)),
 
 	};
 
