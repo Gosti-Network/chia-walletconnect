@@ -75,14 +75,15 @@ export function WalletConnectClientContextProvider({ children }: {
 	);
 
 	const disconnect = useCallback(async () => {
-		// if (typeof client === "undefined") {
-		// 	throw new Error("WalletConnect is not initialized");
-		// }
-		// if (typeof session === "undefined") {
-		// 	throw new Error("Session is not connected");
-		// }
+		if (typeof client === "undefined") {
+			reset();
+			throw new Error("WalletConnect is not initialized");
+		}
+		if (typeof session === "undefined") {
+			reset();
+			throw new Error("Session is not connected");
+		}
 		try {
-
 			await client?.disconnect({
 				topic: session ? session.topic : "",
 				reason: getSdkError("USER_DISCONNECTED"),
@@ -127,14 +128,13 @@ export function WalletConnectClientContextProvider({ children }: {
 				// Update known pairings after session is connected.
 				setPairings(client.pairing.getAll({ active: true }));
 			} catch (e) {
-				disconnect();
 				// ignore rejection
 			} finally {
 				// close modal in case it was open
 				QRCodeModal.close();
 			}
 		},
-		[client, disconnect, onSessionConnected]
+		[client, onSessionConnected]
 	);
 
 
