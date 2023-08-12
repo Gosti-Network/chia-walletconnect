@@ -1,3 +1,7 @@
+# DEPRECATED - this is old wallet connect code. The current stuff has moved to spriggan-shared.
+
+I may update this with the new walletconnect 2 code at a later time if a better standalone lib doesn't get made
+
 # chia-walletconnect
 
 A Chia specific WalletConnect client derived from the original [Chia Wallet Connect DApp Test](https://github.com/Chia-Network/chia-wallet-connect-dapp-test) with all of the bloat cut out and added chia functionality.
